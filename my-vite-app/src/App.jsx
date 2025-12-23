@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { DataProvider } from './context/DataContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -14,6 +15,11 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 import MainLayout from './components/Layout/MainLayout';
 
 function App() {
+  useEffect(() => {
+    // Apply dark theme class to document
+    document.documentElement.classList.add('dark');
+  }, []);
+
   return (
     <DataProvider>
       <BrowserRouter>

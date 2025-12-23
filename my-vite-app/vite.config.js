@@ -11,6 +11,9 @@ export default defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    include: ['tslib'],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

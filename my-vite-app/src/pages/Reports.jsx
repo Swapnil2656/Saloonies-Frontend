@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { TrendingUp, FileText, PieChart, Download } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { TrendingUp, FileText, PieChart, Download, BarChart3, DollarSign, TrendingDown } from 'lucide-react';
 
 const Reports = () => {
-    const { invoices, staff } = useData();
+    const { invoices, staff, services, customers } = useData();
     const [filter, setFilter] = useState('All Time');
 
     // --- Aggregations ---
@@ -15,157 +17,170 @@ const Reports = () => {
     const totalIGST = invoices.reduce((a, b) => a + (b.igst || 0), 0);
     const totalTax = totalCGST + totalSGST + totalIGST;
 
-    // --- Data Prep for Charts ---
+    // Service performance
+    const serviceStats = services.map(service => {
+        const serviceInvoices = invoices.filter(inv => 
+            inv.services.some(s => s.id === service.id)
+        );
+        const revenue = serviceInvoices.reduce((sum, inv) => sum + service.price, 0);
+        return {
+            ...service,
+            bookings: serviceInvoices.length,
+            revenue
+        };
+    }).sort((a, b) => b.revenue - a.revenue);
 
-    // 1. Revenue & Tax Timeline (Group by Date)
-    const groupedByDate = invoices.reduce((acc, curr) => {
-        const d = curr.date; // assuming YYYY-MM-DD
-        if (!acc[d]) acc[d] = { revenue: 0, tax: 0 };
-        acc[d].revenue += curr.total;
-        acc[d].tax += curr.totalGst;
-        return acc;
-    }, {});
-
-    // Sort dates
-    const sortedDates = Object.keys(groupedByDate).sort();
-
-    const lineData = {
-        labels: sortedDates,
-        datasets: [
-            {
-                label: 'Total Revenue',
-                data: sortedDates.map(d => groupedByDate[d].revenue),
-                borderColor: '#4F46E5',
-                backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                fill: true,
-                tension: 0.4
-            },
-            {
-                label: 'GST Collected',
-                data: sortedDates.map(d => groupedByDate[d].tax),
-                borderColor: '#EA580C',
-                backgroundColor: 'transparent',
-                borderDash: [5, 5],
-                tension: 0.4
-            }
-        ]
-    };
-
-    // 2. GST Breakdown Pie
-    const pieData = {
-        labels: ['CGST (2.5%)', 'SGST (2.5%)', 'IGST (5%)'],
-        datasets: [{
-            data: [totalCGST, totalSGST, totalIGST],
-            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'],
-            borderWidth: 0
-        }]
-    };
-
-    // 3. Staff Contribution Bar
-    const staffStats = staff.map(s => {
-        const amt = invoices.filter(inv => inv.staffId === s.id).reduce((a, b) => a + b.total, 0);
-        return { name: s.name, amount: amt };
-    });
-
-    const barData = {
-        labels: staffStats.map(s => s.name),
-        datasets: [{
-            label: 'Revenue',
-            data: staffStats.map(s => s.amount),
-            backgroundColor: '#6366F1',
-            borderRadius: 6
-        }]
-    };
+    // Staff performance
+    const staffStats = staff.map(member => {
+        const memberInvoices = invoices.filter(inv => inv.staffId === member.id);
+        const revenue = memberInvoices.reduce((sum, inv) => sum + inv.total, 0);
+        return {
+            ...member,
+            bookings: memberInvoices.length,
+            revenue
+        };
+    }).sort((a, b) => b.revenue - a.revenue);
 
     return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div className="w-full max-w-none space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                 <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Analytics Dashboard</h2>
-                    <p style={{ color: '#6B7280' }}>Financial performance and GST reports</p>
+                    <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
+                    <p className="text-muted-foreground">Financial performance and business insights</p>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <select className="form-input" style={{ width: '150px' }} value={filter} onChange={e => setFilter(e.target.value)}>
-                        <option>All Time</option>
-                        <option>This Month</option>
-                        <option>Today</option>
-                    </select>
-                    <button className="btn btn-secondary">
-                        <Download size={16} /> Export
-                    </button>
-                </div>
-            </div>
-
-            {/* Summary Cards */}
-            <div className="grid-4">
-                <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #4F46E5' }}>
-                    <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>TOTAL REVENUE</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalRev)}</div>
-                </div>
-                <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #F59E0B' }}>
-                    <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>TOTAL GST</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalTax)}</div>
-                </div>
-                <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #10B981' }}>
-                    <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>CGST + SGST</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalCGST + totalSGST)}</div>
-                </div>
-                <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #3B82F6' }}>
-                    <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>IGST COLLECTED</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalIGST)}</div>
+                <div className="flex gap-2">
+                    <Select value={filter} onValueChange={setFilter}>
+                        <SelectTrigger className="w-[150px]">
+                            <SelectValue placeholder="Time period" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All Time">All Time</SelectItem>
+                            <SelectItem value="This Month">This Month</SelectItem>
+                            <SelectItem value="Today">Today</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline">
+                        <Download className="mr-2 h-4 w-4" />
+                        Export
+                    </Button>
                 </div>
             </div>
 
-            <div className="grid-3-1">
-                {/* Revenue Line Chart */}
-                <div className="card">
-                    <div className="card-header"><h3 className="card-title">Revenue & Tax Overview</h3></div>
-                    <div style={{ height: '300px' }}>
-                        {totalRev > 0 && <Line key={JSON.stringify(lineData)} data={lineData} options={{
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'top' },
-                                tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } }
-                            },
-                            scales: { y: { ticks: { callback: (v) => formatCurrency(v) } } }
-                        }} />}
+            {/* Revenue Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(totalRev)}</div>
+                        <p className="text-xs text-muted-foreground">
+                            From {invoices.length} invoices
+                        </p>
+                    </CardContent>
+                </Card>
+                
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total GST</CardTitle>
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(totalTax)}</div>
+                        <p className="text-xs text-muted-foreground">
+                            Tax collected
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">CGST + SGST</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(totalCGST + totalSGST)}</div>
+                        <p className="text-xs text-muted-foreground">
+                            State tax
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">IGST</CardTitle>
+                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(totalIGST)}</div>
+                        <p className="text-xs text-muted-foreground">
+                            Interstate tax
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Service Performance */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Service Performance</CardTitle>
+                    <CardDescription>
+                        Most popular services by revenue
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {serviceStats.slice(0, 5).map((service, index) => (
+                            <div key={service.id} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                                        {index + 1}
+                                    </div>
+                                    <div>
+                                        <p className="font-medium">{service.name}</p>
+                                        <p className="text-sm text-muted-foreground">{service.bookings} bookings</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-medium">{formatCurrency(service.revenue)}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                </div>
+                </CardContent>
+            </Card>
 
-                {/* GST Pie Chart */}
-                <div className="card">
-                    <div className="card-header"><h3 className="card-title">GST Breakdown</h3></div>
-                    <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
-                        <Doughnut key={JSON.stringify(pieData)} data={pieData} options={{
-                            maintainAspectRatio: false,
-                            plugins: { tooltip: { callbacks: { label: (c) => c.label + ': ' + formatCurrency(c.parsed) } } }
-                        }} />
+            {/* Staff Performance */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Staff Performance</CardTitle>
+                    <CardDescription>
+                        Team member revenue contribution
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {staffStats.map((member, index) => (
+                            <div key={member.id} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-medium">
+                                        {member.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <p className="font-medium">{member.name}</p>
+                                        <p className="text-sm text-muted-foreground">{member.bookings} appointments</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-medium">{formatCurrency(member.revenue)}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#3B82F6' }}>● CGST</span> <span>{formatCurrency(totalCGST)}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#10B981' }}>● SGST</span> <span>{formatCurrency(totalSGST)}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#F59E0B' }}>● IGST</span> <span>{formatCurrency(totalIGST)}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Staff Performance Bar */}
-            <div className="card">
-                <div className="card-header"><h3 className="card-title">Revenue by Staff Member</h3></div>
-                <div style={{ height: '250px' }}>
-                    <Bar key={JSON.stringify(barData)} data={barData} options={{
-                        maintainAspectRatio: false,
-                        plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } } },
-                        scales: { y: { ticks: { callback: (v) => formatCurrency(v) } } }
-                    }} />
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </div>
     );
 };

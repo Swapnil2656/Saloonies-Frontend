@@ -1,32 +1,22 @@
-import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import Header from './Header';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
 
 const MainLayout = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const location = useLocation();
-
-    // Map paths to titles
-    const getTitle = (pathname) => {
-        const path = pathname.split('/')[1];
-        if (!path) return 'Dashboard';
-        return path.charAt(0).toUpperCase() + path.slice(1);
-    };
-
     return (
-        <div className="app-container">
-            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-            <div className="main-content-wrapper">
-                <Header
-                    title={getTitle(location.pathname)}
-                    onMenuClick={() => setIsSidebarOpen(true)}
-                />
-                <main className="page-content">
-                    <Outlet />
+        <SidebarProvider>
+            <AppSidebar />
+            <div className="flex min-h-screen flex-1 flex-col overflow-hidden">
+                <SiteHeader />
+                <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 min-w-0">
+                    <div className="w-full max-w-none">
+                        <Outlet />
+                    </div>
                 </main>
             </div>
-        </div>
+        </SidebarProvider>
     );
 };
 

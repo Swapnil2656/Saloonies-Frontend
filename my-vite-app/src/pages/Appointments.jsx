@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
 import { formatCurrency } from '../utils/formatters';
 import { useData } from '../context/DataContext';
-import Modal from '../components/UI/Modal';
-import { Plus, X, Calendar, Clock, MoreVertical, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar, Clock, Plus, Search, User, Scissors, FileText } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
 const Appointments = () => {
     const { appointments, staff, services, customers, addAppointment, updateAppointmentStatus, deleteAppointment } = useData();
     const navigate = useNavigate();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [booking, setBooking] = useState({ customerId: '', staffId: '', serviceId: '', date: new Date().toISOString().split('T')[0], time: '10:00' });
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        addAppointment({ ...booking, customerId: Number(booking.customerId), staffId: Number(booking.staffId), serviceId: Number(booking.serviceId) });
-        setIsModalOpen(false);
-    };
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     const handleStatusChange = (id, newStatus) => {
         if (window.confirm(`Mark appointment as ${newStatus}?`)) {
@@ -36,141 +35,181 @@ const Appointments = () => {
         });
     };
 
-    const statusColors = {
-        'Scheduled': { bg: '#F3F4F6', text: '#4B5563' }, // Gray
-        'Pending': { bg: '#FFEDD5', text: '#C2410C' },   // Orange
-        'Confirmed': { bg: '#DBEAFE', text: '#1E40AF' }, // Blue
-        'Completed': { bg: '#D1FAE5', text: '#065F46' }, // Green
-        'Cancelled': { bg: '#FEE2E2', text: '#991B1B' }  // Red
-    };
+    // Filter and search appointments
+    const filteredAppointments = appointments.filter(appointment => {
+        const customer = customers.find(c => c.id === appointment.customerId);
+        const service = services.find(s => s.id === appointment.serviceId);
+        const staffMember = staff.find(s => s.id === appointment.staffId);
+        
+        const matchesSearch = customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             service?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             staffMember?.name.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+    });
 
     // Sort by date/time
-    const sortedAppointments = [...appointments].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedAppointments = [...filteredAppointments].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div className="w-full max-w-none space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                 <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Appointments</h2>
-                    <p style={{ color: '#6B7280' }}>Manage bookings and status</p>
+                    <h1 className="text-2xl font-semibold">Appointments</h1>
+                    <p className="text-muted-foreground">Manage bookings and status</p>
                 </div>
-                <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
-                    <Plus size={18} /> New Appointment
-                </button>
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Appointment
+                </Button>
             </div>
 
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <div className="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style={{ paddingLeft: '24px' }}>Date & Time</th>
-                                <th>Customer</th>
-                                <th>Service</th>
-                                <th>Staff</th>
-                                <th>Status</th>
-                                <th style={{ textAlign: 'right', paddingRight: '24px' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedAppointments.map(app => (
-                                <tr key={app.id} style={{ opacity: app.status === 'Cancelled' ? 0.6 : 1 }}>
-                                    <td style={{ paddingLeft: '24px' }}>
-                                        <div style={{ fontWeight: 600 }}>{format(parseISO(app.date), 'MMM dd, yyyy')}</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#6B7280', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <Clock size={12} /> {app.time}
-                                        </div>
-                                    </td>
-                                    <td>{customers.find(c => c.id === app.customerId)?.name}</td>
-                                    <td>
-                                        <span className="status-badge" style={{ background: '#F8FAFC', color: '#475569', border: '1px solid #E2E8F0' }}>
-                                            {services.find(s => s.id === app.serviceId)?.name}
-                                        </span>
-                                    </td>
-                                    <td style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '18px' }}>
-                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#E0E7FF', color: '#4338CA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
-                                            {staff.find(s => s.id === app.staffId)?.name.charAt(0)}
-                                        </div>
-                                        {staff.find(s => s.id === app.staffId)?.name}
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <span
-                                                className="status-badge"
-                                                style={{
-                                                    background: statusColors[app.status]?.bg,
-                                                    color: statusColors[app.status]?.text
-                                                }}
-                                            >
-                                                {app.status}
-                                            </span>
-                                            {app.isBilled && <span className="status-badge" style={{ background: '#F0FDFA', color: '#0D9488', border: '1px solid #CCFBF1' }}>BILLED</span>}
-                                        </div>
-                                    </td>
-                                    <td style={{ textAlign: 'right', paddingRight: '24px' }}>
-                                        {app.status !== 'Completed' && app.status !== 'Cancelled' && (
-                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                                {app.status === 'Scheduled' && (
-                                                    <button onClick={() => handleStatusChange(app.id, 'Confirmed')} className="icon-btn" title="Confirm" style={{ color: '#059669' }}><CheckCircle size={18} /></button>
-                                                )}
-                                                {app.status === 'Confirmed' && (
-                                                    <button onClick={() => handleCreateBill(app)} className="btn btn-primary" style={{ padding: '4px 12px', height: 'auto', fontSize: '0.75rem' }}>
-                                                        Create Bill
-                                                    </button>
-                                                )}
-                                                <button onClick={() => handleStatusChange(app.id, 'Cancelled')} className="icon-btn" title="Cancel" style={{ color: '#EF4444' }}><X size={18} /></button>
-                                            </div>
-                                        )}
-                                        {app.status === 'Completed' && <span style={{ fontSize: '0.8rem', color: '#059669', fontWeight: 600 }}>Done</span>}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search appointments..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                    />
                 </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="Scheduled">Scheduled</SelectItem>
+                        <SelectItem value="Confirmed">Confirmed</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="New Appointment">
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label className="form-label">Customer</label>
-                        <select className="form-input" required value={booking.customerId} onChange={e => setBooking({ ...booking, customerId: e.target.value })}>
-                            <option value="">Select Customer</option>
-                            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
+            {/* Appointments Table */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Upcoming Appointments</CardTitle>
+                    <CardDescription>
+                        {sortedAppointments.length} appointment{sortedAppointments.length !== 1 ? 's' : ''} found
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date & Time</TableHead>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Service</TableHead>
+                                    <TableHead>Staff</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {sortedAppointments.map((app) => {
+                                    const customer = customers.find(c => c.id === app.customerId);
+                                    const service = services.find(s => s.id === app.serviceId);
+                                    const staffMember = staff.find(s => s.id === app.staffId);
+
+                                    return (
+                                        <TableRow key={app.id} className={app.status === 'Cancelled' ? 'opacity-60' : ''}>
+                                            <TableCell>
+                                                <div className="space-y-1">
+                                                    <div className="font-medium">{format(parseISO(app.date), 'MMM dd, yyyy')}</div>
+                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                                        <Clock className="h-3 w-3" />
+                                                        {app.time}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <User className="h-4 w-4 text-muted-foreground" />
+                                                    {customer?.name}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <Scissors className="h-4 w-4 text-muted-foreground" />
+                                                    {service?.name}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>{staffMember?.name}</TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col gap-1">
+                                                    <Badge 
+                                                        variant={
+                                                            app.status === 'Completed' ? 'default' :
+                                                            app.status === 'Confirmed' ? 'secondary' :
+                                                            app.status === 'Cancelled' ? 'destructive' :
+                                                            'outline'
+                                                        }
+                                                    >
+                                                        {app.status}
+                                                    </Badge>
+                                                    {app.isBilled && <Badge variant="outline">Billed</Badge>}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    {app.status === 'Scheduled' && (
+                                                        <Button 
+                                                            size="sm" 
+                                                            variant="outline"
+                                                            onClick={() => handleStatusChange(app.id, 'Confirmed')}
+                                                        >
+                                                            Confirm
+                                                        </Button>
+                                                    )}
+                                                    {app.status === 'Confirmed' && (
+                                                        <Button 
+                                                            size="sm"
+                                                            onClick={() => handleCreateBill(app)}
+                                                        >
+                                                            <FileText className="h-4 w-4 mr-1" />
+                                                            Bill
+                                                        </Button>
+                                                    )}
+                                                    {app.status !== 'Completed' && app.status !== 'Cancelled' && (
+                                                        <Button 
+                                                            size="sm" 
+                                                            variant="destructive"
+                                                            onClick={() => handleStatusChange(app.id, 'Cancelled')}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group">
-                            <label className="form-label">Service</label>
-                            <select className="form-input" required value={booking.serviceId} onChange={e => setBooking({ ...booking, serviceId: e.target.value })}>
-                                <option value="">Select Service</option>
-                                {services.map(s => <option key={s.id} value={s.id}>{s.name} - {formatCurrency(s.price)}</option>)}
-                            </select>
+                    
+                    {/* Empty State */}
+                    {sortedAppointments.length === 0 && (
+                        <div className="text-center py-8">
+                            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                            <h3 className="text-lg font-medium">No appointments found</h3>
+                            <p className="text-muted-foreground">Start scheduling appointments for your customers.</p>
+                            <Button className="mt-4">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Schedule Appointment
+                            </Button>
                         </div>
-                        <div className="form-group">
-                            <label className="form-label">Staff</label>
-                            <select className="form-input" required value={booking.staffId} onChange={e => setBooking({ ...booking, staffId: e.target.value })}>
-                                <option value="">Select Staff</option>
-                                {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                            </select>
-                        </div>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group">
-                            <label className="form-label">Date</label>
-                            <input className="form-input" type="date" required value={booking.date} onChange={e => setBooking({ ...booking, date: e.target.value })} />
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Time</label>
-                            <input className="form-input" type="time" required value={booking.time} onChange={e => setBooking({ ...booking, time: e.target.value })} />
-                        </div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-                        <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                        <button type="submit" className="btn btn-primary">Confirm Booking</button>
-                    </div>
-                </form>
-            </Modal>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 };

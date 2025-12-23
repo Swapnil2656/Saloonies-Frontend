@@ -18,10 +18,29 @@ const Dashboard = () => {
     const lineOptions = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: { 
+            legend: { display: false }
+        },
         scales: {
-            x: { grid: { display: false } },
-            y: { border: { display: false } }
+            x: { 
+                grid: { 
+                    display: false 
+                },
+                ticks: {
+                    color: '#94a3b8'
+                }
+            },
+            y: { 
+                border: { 
+                    display: false 
+                },
+                grid: {
+                    color: '#1e1e1e'
+                },
+                ticks: {
+                    color: '#94a3b8'
+                }
+            }
         }
     };
 
@@ -30,21 +49,30 @@ const Dashboard = () => {
         datasets: [{
             label: 'Revenue',
             data: [1200, 1900, 1500, 2200, 2800, 3500, 2000],
-            borderColor: '#4F46E5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true, tension: 0.4
+            borderColor: '#6366f1', 
+            backgroundColor: 'rgba(99, 102, 241, 0.1)', 
+            fill: true, 
+            tension: 0.4,
+            borderWidth: 2,
+            pointBackgroundColor: '#6366f1',
+            pointBorderColor: '#6366f1',
+            pointHoverBackgroundColor: '#06b6d4'
         }]
     };
 
     const pieData = {
-        labels: ['Hair', 'Nails', 'All'],
+        labels: ['Hair', 'Nails', 'Spa'],
         datasets: [{
-            data: [50, 30, 20], backgroundColor: ['#4F46E5', '#EF4444', '#10B981'], borderWidth: 0
+            data: [50, 30, 20], 
+            backgroundColor: ['#6366f1', '#06b6d4', '#10b981'], 
+            borderWidth: 0
         }]
     };
 
     return (
-        <div>
+        <div className="w-full max-w-none">
             {/* 4 KPIs */}
-            <div className="grid-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
                 <KPICard title="Total Revenue" count={formatCurrency(totalRevenue)} icon={DollarSign} trend={12} />
                 <KPICard title="Appointments" count={appointments.length} icon={CalendarCheck} trend={8} />
                 <KPICard title="Active Staff" count={staff.length} icon={Users} trend={0} />
@@ -52,8 +80,8 @@ const Dashboard = () => {
             </div>
 
             {/* Charts Section */}
-            <div className="grid-3-1">
-                <div className="card">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6 mb-6">
+                <div className="xl:col-span-2 card">
                     <div className="card-header">
                         <h3 className="card-title">Revenue Trends</h3>
                     </div>
@@ -72,7 +100,7 @@ const Dashboard = () => {
             </div>
 
             {/* Tables Section */}
-            <div className="grid-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 {/* Recent Appointments */}
                 <div className="card">
                     <div className="card-header">
@@ -118,17 +146,17 @@ const Dashboard = () => {
                     </div>
                     <div>
                         {staff.slice(0, 4).map(s => (
-                            <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
+                            <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <img src={s.image} style={{ width: '40px', height: '40px', borderRadius: '50%' }} alt="" />
                                     <div>
-                                        <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{s.name}</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>{s.role}</div>
+                                        <div style={{ fontWeight: '600', fontSize: '0.9rem', color: 'var(--text-main)' }}>{s.name}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{s.role}</div>
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontWeight: 'bold' }}>{formatCurrency(1250)}</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#10B981' }}>+12%</div>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{formatCurrency(1250)}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--success)' }}>+12%</div>
                                 </div>
                             </div>
                         ))}

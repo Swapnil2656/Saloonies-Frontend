@@ -1,71 +1,106 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters';
-import Modal from '../components/UI/Modal';
-import { Plus, Search, Trash2 } from 'lucide-react';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Search, Trash2, Package, AlertCircle } from 'lucide-react';
 
 const Products = () => {
     const { products, addProduct, deleteProduct } = useData();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newProduct, setNewProduct] = useState({ name: '', category: '', price: '', stock: '' });
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        addProduct({ ...newProduct, price: Number(newProduct.price), stock: Number(newProduct.stock) });
-        setIsModalOpen(false);
-    };
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <div style={{ position: 'relative' }}>
-                    <Search size={18} style={{ position: 'absolute', top: '50%', left: '12px', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
-                    <input className="form-input" style={{ width: '300px', paddingLeft: '40px' }} placeholder="Search products..." />
+        <div className="w-full max-w-none space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                <div>
+                    <h1 className="text-2xl font-semibold">Inventory</h1>
+                    <p className="text-muted-foreground">Manage your salon products and stock</p>
                 </div>
-                <button onClick={() => setIsModalOpen(true)} className="btn btn-primary"><Plus size={18} /> Add Product</button>
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Product
+                </Button>
             </div>
 
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <div className="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style={{ paddingLeft: '24px' }}>Details</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {products.map(p => (
-                                <tr key={p.id}>
-                                    <td style={{ paddingLeft: '24px', fontWeight: 600 }}>{p.name}</td>
-                                    <td>{p.category}</td>
-                                    <td style={{ fontWeight: 600 }}>{formatCurrency(p.price)}</td>
-                                    <td style={{ color: p.stock < 5 ? '#EF4444' : '#10B981', fontWeight: 600 }}>{p.stock}</td>
-                                    <td><button onClick={() => deleteProduct(p.id)} className="icon-btn" style={{ color: '#EF4444' }}><Trash2 size={16} /></button></td>
-                                </tr>
+            {/* Search */}
+            <div className="relative max-w-md">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                />
+            </div>
+
+            {/* Products Table */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Products</CardTitle>
+                    <CardDescription>Manage your salon product inventory</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Product</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Stock</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="w-[100px]">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredProducts.map((product) => (
+                                <TableRow key={product.id}>
+                                    <TableCell className="font-medium">{product.name}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline">{product.category}</Badge>
+                                    </TableCell>
+                                    <TableCell>{formatCurrency(product.price)}</TableCell>
+                                    <TableCell>{product.stock}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={product.stock > 5 ? 'default' : product.stock > 0 ? 'destructive' : 'secondary'}>
+                                            {product.stock > 5 ? 'In Stock' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => deleteProduct(product.id)}>
+                                            <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="New Product">
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group"><label className="form-label">Name</label><input className="form-input" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} /></div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group"><label className="form-label">Price</label><input className="form-input" required value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: e.target.value })} /></div>
-                        <div className="form-group"><label className="form-label">Stock</label><input className="form-input" required value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })} /></div>
+            {/* Empty State */}
+            {filteredProducts.length === 0 && (
+                <Card className="text-center p-8">
+                    <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
+                        <Package className="h-6 w-6 text-muted-foreground" />
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', gap: '1rem' }}>
-                        <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                        <button type="submit" className="btn btn-primary">Add</button>
-                    </div>
-                </form>
-            </Modal>
+                    <h3 className="text-lg font-medium">No products found</h3>
+                    <p className="text-muted-foreground">Start by adding products to your inventory.</p>
+                    <Button className="mt-4">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Product
+                    </Button>
+                </Card>
+            )}
         </div>
     );
 };
+
 export default Products;

@@ -4,25 +4,39 @@
 @tailwind utilities;
 
 :root {
-  /* Colors - Light Theme */
-  --bg-body: #F5F7FB;
-  --bg-card: #FFFFFF;
-  --bg-sidebar: #FFFFFF;
+  /* Dark Theme - Minimal & Aesthetic */
+  --bg-body: #0a0a0a;
+  --bg-card: #111111;
+  --bg-sidebar: #0f0f0f;
+  --bg-elevated: #1a1a1a;
 
-  --primary: #4F46E5;
-  --primary-hover: #4338CA;
-  --primary-light: #E0E7FF;
+  --primary: #6366f1;
+  --primary-hover: #5b21b6;
+  --primary-light: #1e1b4b;
+  --accent: #06b6d4;
+  --accent-muted: #134e4a;
 
-  --text-main: #111827;
-  --text-muted: #6B7280;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
 
-  --border: #E5E7EB;
+  --border: #1e1e1e;
+  --border-subtle: #262626;
+
+  --success: #10b981;
+  --success-bg: #064e3b;
+  --warning: #f59e0b;
+  --warning-bg: #451a03;
+  --error: #ef4444;
+  --error-bg: #7f1d1d;
 
   --sidebar-width: 260px;
   --header-height: 64px;
   --container-max-width: 1200px;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
   --radius: 12px;
   --font-family: 'Inter', sans-serif;
 }
@@ -49,7 +63,7 @@ body {
 
 .sidebar {
   width: var(--sidebar-width);
-  background-color: var(--bg-sidebar);
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   height: 100vh;
   position: fixed;
@@ -59,6 +73,7 @@ body {
   flex-direction: column;
   z-index: 50;
   transition: transform 0.3s ease-in-out;
+  backdrop-filter: blur(10px);
 }
 
 .main-content-wrapper {
@@ -73,7 +88,7 @@ body {
 /* Header */
 .top-header {
   height: var(--header-height);
-  background-color: var(--bg-card);
+  background: var(--bg-elevated);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -82,6 +97,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 40;
+  backdrop-filter: blur(10px);
+  background: rgba(15, 15, 15, 0.95);
 }
 
 .page-content {
@@ -195,25 +212,31 @@ body {
   align-items: center;
   padding: 0 1.5rem;
   border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
 }
 
 .logo-box {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
   width: 32px;
   height: 32px;
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justifyContent: center;
+  justify-content: center;
   font-weight: bold;
   margin-right: 12px;
+  box-shadow: var(--shadow-glow);
 }
 
 .brand-name {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-main);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nav-links {
@@ -237,13 +260,15 @@ body {
 }
 
 .nav-item:hover {
-  background-color: var(--bg-body);
+  background: var(--bg-elevated);
   color: var(--text-main);
+  box-shadow: var(--shadow-sm);
 }
 
 .nav-item.active {
-  background-color: var(--primary-light);
+  background: var(--primary-light);
   color: var(--primary);
+  box-shadow: var(--shadow-glow);
 }
 
 /* Card */
@@ -251,10 +276,16 @@ body {
   background: var(--bg-card);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-glow);
+  border-color: var(--border-subtle);
 }
 
 .card-header {
@@ -312,13 +343,13 @@ body {
 }
 
 .trend-up {
-  background: #D1FAE5;
-  color: #065F46;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .trend-down {
-  background: #FEE2E2;
-  color: #991B1B;
+  background: var(--error-bg);
+  color: var(--error);
 }
 
 /* Tables */
@@ -336,7 +367,7 @@ table {
 th {
   text-align: left;
   padding: 1rem;
-  background: #F9FAFB;
+  background: var(--bg-elevated);
   color: var(--text-muted);
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -363,18 +394,18 @@ tr:last-child td {
 }
 
 .completed {
-  background: #D1FAE5;
-  color: #065F46;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .confirmed {
-  background: #DBEAFE;
-  color: #1E40AF;
+  background: var(--primary-light);
+  color: var(--accent);
 }
 
 .scheduled {
-  background: #FEF3C7;
-  color: #92400E;
+  background: var(--warning-bg);
+  color: var(--warning);
 }
 
 /* Buttons & Inputs */
@@ -394,22 +425,26 @@ tr:last-child td {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: white;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow);
 }
 
 .btn-secondary {
-  background: white;
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text-main);
 }
 
 .btn-secondary:hover {
-  background: #F9FAFB;
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
 }
 
 .icon-btn {
@@ -423,7 +458,7 @@ tr:last-child td {
 
 .icon-btn:hover {
   color: var(--text-main);
-  background: #F3F4F6;
+  background: var(--bg-elevated);
 }
 
 .form-group {
@@ -445,12 +480,14 @@ tr:last-child td {
   border-radius: 8px;
   font-size: 0.9rem;
   color: var(--text-main);
-  background: #fff;
+  background: var(--bg-elevated);
+  transition: all 0.2s ease;
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .fade-in {
@@ -489,4 +526,115 @@ tr:last-child td {
   .hidden-desktop {
     display: block;
   }
+}
+
+
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 220.9 39.3% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220.9 39.3% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 238.56 92.16% 67.25%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 187.19 80.42% 45.1%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 238.56 92.16% 67.25%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --radius: 0.75rem;
+    --sidebar-background: 224.71 71.43% 4.12%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 238.56 92.16% 67.25%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 238.56 92.16% 67.25%;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family);
+  }
+}
+
+/* Dark theme enhancements */
+html {
+  color-scheme: dark;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-body);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Selection styling */
+::selection {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Gradient overlays for enhanced aesthetics */
+.gradient-overlay {
+  position: relative;
+}
+
+.gradient-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.6;
+}
+
+/* Glass effect for elevated cards */
+.glass-effect {
+  background: rgba(17, 17, 17, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
