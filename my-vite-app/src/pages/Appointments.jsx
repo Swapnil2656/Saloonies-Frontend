@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatCurrency } from '../utils/formatters';
 import { useData } from '../context/DataContext';
 import Modal from '../components/UI/Modal';
 import { Plus, X, Calendar, Clock, MoreVertical, CheckCircle, AlertCircle, FileText } from 'lucide-react';
@@ -143,7 +144,7 @@ const Appointments = () => {
                             <label className="form-label">Service</label>
                             <select className="form-input" required value={booking.serviceId} onChange={e => setBooking({ ...booking, serviceId: e.target.value })}>
                                 <option value="">Select Service</option>
-                                {services.map(s => <option key={s.id} value={s.id}>{s.name} - ${s.price}</option>)}
+                                {services.map(s => <option key={s.id} value={s.id}>{s.name} - {formatCurrency(s.price)}</option>)}
                             </select>
                         </div>
                         <div className="form-group">

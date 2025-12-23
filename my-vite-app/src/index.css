@@ -1,8 +1,6 @@
-<<<<<<< HEAD
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-=======
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
@@ -481,4 +479,3 @@ tr:last-child td {
     display: block;
   }
 }
->>>>>>> 9555ea81b1d904ac804e0dd35de42f9c259b71f1

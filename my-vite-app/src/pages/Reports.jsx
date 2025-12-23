@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { formatCurrency } from '../utils/formatters';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { TrendingUp, FileText, PieChart, Download } from 'lucide-react';
 
@@ -99,19 +100,19 @@ const Reports = () => {
             <div className="grid-4">
                 <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #4F46E5' }}>
                     <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>TOTAL REVENUE</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>${totalRev.toFixed(2)}</div>
+                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalRev)}</div>
                 </div>
                 <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #F59E0B' }}>
                     <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>TOTAL GST</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>${totalTax.toFixed(2)}</div>
+                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalTax)}</div>
                 </div>
                 <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #10B981' }}>
                     <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>CGST + SGST</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>${(totalCGST + totalSGST).toFixed(2)}</div>
+                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalCGST + totalSGST)}</div>
                 </div>
                 <div className="card" style={{ gap: '0.5rem', borderLeft: '4px solid #3B82F6' }}>
                     <div style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>IGST COLLECTED</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>${totalIGST.toFixed(2)}</div>
+                    <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{formatCurrency(totalIGST)}</div>
                 </div>
             </div>
 
@@ -120,7 +121,14 @@ const Reports = () => {
                 <div className="card">
                     <div className="card-header"><h3 className="card-title">Revenue & Tax Overview</h3></div>
                     <div style={{ height: '300px' }}>
-                        <Line data={lineData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }} />
+                        <Line data={lineData} options={{
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'top' },
+                                tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } }
+                            },
+                            scales: { y: { ticks: { callback: (v) => formatCurrency(v) } } }
+                        }} />
                     </div>
                 </div>
 
@@ -128,17 +136,20 @@ const Reports = () => {
                 <div className="card">
                     <div className="card-header"><h3 className="card-title">GST Breakdown</h3></div>
                     <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
-                        <Doughnut data={pieData} options={{ maintainAspectRatio: false }} />
+                        <Doughnut data={pieData} options={{
+                            maintainAspectRatio: false,
+                            plugins: { tooltip: { callbacks: { label: (c) => c.label + ': ' + formatCurrency(c.parsed) } } }
+                        }} />
                     </div>
                     <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#3B82F6' }}>● CGST</span> <span>${totalCGST.toFixed(2)}</span>
+                            <span style={{ color: '#3B82F6' }}>● CGST</span> <span>{formatCurrency(totalCGST)}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#10B981' }}>● SGST</span> <span>${totalSGST.toFixed(2)}</span>
+                            <span style={{ color: '#10B981' }}>● SGST</span> <span>{formatCurrency(totalSGST)}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#F59E0B' }}>● IGST</span> <span>${totalIGST.toFixed(2)}</span>
+                            <span style={{ color: '#F59E0B' }}>● IGST</span> <span>{formatCurrency(totalIGST)}</span>
                         </div>
                     </div>
                 </div>
@@ -148,7 +159,11 @@ const Reports = () => {
             <div className="card">
                 <div className="card-header"><h3 className="card-title">Revenue by Staff Member</h3></div>
                 <div style={{ height: '250px' }}>
-                    <Bar data={barData} options={{ maintainAspectRatio: false }} />
+                    <Bar data={barData} options={{
+                        maintainAspectRatio: false,
+                        plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } } },
+                        scales: { y: { ticks: { callback: (v) => formatCurrency(v) } } }
+                    }} />
                 </div>
             </div>
         </div>
