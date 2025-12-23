@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { formatCurrency } from '../utils/formatters';
 import Modal from '../components/UI/Modal';
 import { Plus, Search, Trash2, Edit2, Clock } from 'lucide-react';
 
@@ -55,7 +56,7 @@ const Services = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: '#6B7280' }}>
                                 <Clock size={16} /> {service.duration}m
                             </div>
-                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>${service.price}</div>
+                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{formatCurrency(service.price)}</div>
                         </div>
                     </div>
                 ))}
@@ -73,7 +74,7 @@ const Services = () => {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div className="form-group">
-                            <label className="form-label">Price ($)</label>
+                            <label className="form-label">Price (₹)</label>
                             <input type="number" className="form-input" required value={newService.price} onChange={e => setNewService({ ...newService, price: e.target.value })} />
                         </div>
                         <div className="form-group">

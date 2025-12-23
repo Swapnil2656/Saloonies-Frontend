@@ -29,11 +29,18 @@ const Sidebar = ({ isOpen, onClose }) => {
             {/* Sidebar */}
             <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
                 {/* Brand */}
-                <div className="nav-header" style={{ justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <div className="logo-box">S</div>
-                        <span className="brand-name">Saloonie</span>
-                    </div>
+                <div className="nav-header" style={{ justifyContent: 'center', padding: '1.5rem 0' }}>
+                    <h1 style={{
+                        margin: 0,
+                        fontSize: '1.5rem',
+                        fontWeight: '800',
+                        background: 'linear-gradient(45deg, #4F46E5, #9333EA)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        letterSpacing: '-0.5px'
+                    }}>
+                        Saloonies
+                    </h1>
                     {/* Close button for mobile */}
                     <button
                         className="icon-btn hidden-desktop"

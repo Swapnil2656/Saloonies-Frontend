@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
+import { formatCurrency } from '../utils/formatters';
 import Modal from '../components/UI/Modal';
 import { Plus, Printer, Eye, MapPin, Download, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -156,7 +157,7 @@ const Billing = () => {
                                                 <MapPin size={12} /> {inv.customerState}
                                             </div>
                                         </td>
-                                        <td>${inv.subtotal.toFixed(2)}</td>
+                                        <td>{formatCurrency(inv.subtotal)}</td>
                                         <td>
                                             {isIGST ? (
                                                 <span className="status-badge" style={{ background: '#E0E7FF', color: '#4338CA' }}>IGST (5%)</span>
@@ -164,7 +165,7 @@ const Billing = () => {
                                                 <span className="status-badge" style={{ background: '#F1F5F9', color: '#475569' }}>CGST+SGST</span>
                                             )}
                                         </td>
-                                        <td style={{ fontWeight: 700, color: '#10B981', fontSize: '1rem' }}>${inv.total.toFixed(2)}</td>
+                                        <td style={{ fontWeight: 700, color: '#10B981', fontSize: '1rem' }}>{formatCurrency(inv.total)}</td>
                                         <td style={{ textAlign: 'right', paddingRight: '24px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                                 <button onClick={() => setPreviewInvoice(inv)} className="icon-btn" title="View/Print"><Printer size={18} /></button>
@@ -205,22 +206,22 @@ const Billing = () => {
                     </div>
                     {/* ... Multi Selects ... */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group"><label className="form-label">Services (Ctrl+Click)</label><select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedServices} onChange={e => handleMultiSelect(e, 'selectedServices')}>{services.map(s => <option key={s.id} value={s.id}>{s.name} (${s.price})</option>)}</select></div>
-                        <div className="form-group"><label className="form-label">Products (Ctrl+Click)</label><select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedProducts} onChange={e => handleMultiSelect(e, 'selectedProducts')}>{products.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price})</option>)}</select></div>
+                        <div className="form-group"><label className="form-label">Services (Ctrl+Click)</label><select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedServices} onChange={e => handleMultiSelect(e, 'selectedServices')}>{services.map(s => <option key={s.id} value={s.id}>{s.name} ({formatCurrency(s.price)})</option>)}</select></div>
+                        <div className="form-group"><label className="form-label">Products (Ctrl+Click)</label><select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedProducts} onChange={e => handleMultiSelect(e, 'selectedProducts')}>{products.map(p => <option key={p.id} value={p.id}>{p.name} ({formatCurrency(p.price)})</option>)}</select></div>
                     </div>
 
                     {/* Totals Summary */}
                     <div style={{ background: '#F0F9FF', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #BAE6FD' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span style={{ color: '#475569' }}>Subtotal</span><span style={{ fontWeight: 600 }}>${totals.subtotal.toFixed(2)}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span style={{ color: '#475569' }}>Subtotal</span><span style={{ fontWeight: 600 }}>{formatCurrency(totals.subtotal)}</span></div>
                         {totals.igst > 0 ? (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#EA580C' }}><span>IGST (5%)</span><span>+${totals.igst.toFixed(2)}</span></div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#EA580C' }}><span>IGST (5%)</span><span>+{formatCurrency(totals.igst)}</span></div>
                         ) : (
                             <>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}><span>CGST (2.5%)</span><span>+${totals.cgst.toFixed(2)}</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}><span>SGST (2.5%)</span><span>+${totals.sgst.toFixed(2)}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}><span>CGST (2.5%)</span><span>+{formatCurrency(totals.cgst)}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}><span>SGST (2.5%)</span><span>+{formatCurrency(totals.sgst)}</span></div>
                             </>
                         )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #BAE6FD', paddingTop: '8px', marginTop: '4px' }}><span style={{ fontWeight: 700, color: '#0F172A' }}>Grand Total</span><span style={{ fontWeight: 700, color: '#4F46E5', fontSize: '1.2rem' }}>${totals.total.toFixed(2)}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #BAE6FD', paddingTop: '8px', marginTop: '4px' }}><span style={{ fontWeight: 700, color: '#0F172A' }}>Grand Total</span><span style={{ fontWeight: 700, color: '#4F46E5', fontSize: '1.2rem' }}>{formatCurrency(totals.total)}</span></div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
@@ -271,14 +272,14 @@ const Billing = () => {
                                     <tr key={`s-${i}`} style={{ borderBottom: '1px solid #E5E7EB' }}>
                                         <td style={{ padding: '12px 0' }}>{s.name}</td>
                                         <td style={{ padding: '12px 0', color: '#6B7280' }}>Service</td>
-                                        <td style={{ textAlign: 'right', padding: '12px 0' }}>${s.price.toFixed(2)}</td>
+                                        <td style={{ textAlign: 'right', padding: '12px 0' }}>{formatCurrency(s.price)}</td>
                                     </tr>
                                 ))}
                                 {previewInvoice.products?.map((p, i) => (
                                     <tr key={`p-${i}`} style={{ borderBottom: '1px solid #E5E7EB' }}>
                                         <td style={{ padding: '12px 0' }}>{p.name}</td>
                                         <td style={{ padding: '12px 0', color: '#6B7280' }}>Product</td>
-                                        <td style={{ textAlign: 'right', padding: '12px 0' }}>${p.price.toFixed(2)}</td>
+                                        <td style={{ textAlign: 'right', padding: '12px 0' }}>{formatCurrency(p.price)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -288,28 +289,28 @@ const Billing = () => {
                             <div style={{ width: '300px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                     <span style={{ color: '#6B7280' }}>Subtotal</span>
-                                    <span style={{ fontWeight: 600 }}>${previewInvoice.subtotal.toFixed(2)}</span>
+                                    <span style={{ fontWeight: 600 }}>{formatCurrency(previewInvoice.subtotal)}</span>
                                 </div>
                                 {previewInvoice.igst > 0 ? (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                         <span style={{ color: '#6B7280' }}>IGST (5%)</span>
-                                        <span>${previewInvoice.igst.toFixed(2)}</span>
+                                        <span>{formatCurrency(previewInvoice.igst)}</span>
                                     </div>
                                 ) : (
                                     <>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                             <span style={{ color: '#6B7280' }}>CGST (2.5%)</span>
-                                            <span>${previewInvoice.cgst.toFixed(2)}</span>
+                                            <span>{formatCurrency(previewInvoice.cgst)}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                             <span style={{ color: '#6B7280' }}>SGST (2.5%)</span>
-                                            <span>${previewInvoice.sgst.toFixed(2)}</span>
+                                            <span>{formatCurrency(previewInvoice.sgst)}</span>
                                         </div>
                                     </>
                                 )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #E5E7EB', paddingTop: '12px', fontSize: '1.2rem', fontWeight: 800 }}>
                                     <span>Total</span>
-                                    <span>${previewInvoice.total.toFixed(2)}</span>
+                                    <span>{formatCurrency(previewInvoice.total)}</span>
                                 </div>
                             </div>
                         </div>

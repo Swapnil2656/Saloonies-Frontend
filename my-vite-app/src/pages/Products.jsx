@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { formatCurrency } from '../utils/formatters';
 import Modal from '../components/UI/Modal';
 import { Plus, Search, Trash2 } from 'lucide-react';
 
@@ -41,7 +42,7 @@ const Products = () => {
                                 <tr key={p.id}>
                                     <td style={{ paddingLeft: '24px', fontWeight: 600 }}>{p.name}</td>
                                     <td>{p.category}</td>
-                                    <td style={{ fontWeight: 600 }}>${p.price}</td>
+                                    <td style={{ fontWeight: 600 }}>{formatCurrency(p.price)}</td>
                                     <td style={{ color: p.stock < 5 ? '#EF4444' : '#10B981', fontWeight: 600 }}>{p.stock}</td>
                                     <td><button onClick={() => deleteProduct(p.id)} className="icon-btn" style={{ color: '#EF4444' }}><Trash2 size={16} /></button></td>
                                 </tr>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
+import { formatCurrency } from '../utils/formatters';
 import KPICard from '../components/Dashboard/KPICard';
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import { Users, DollarSign, CalendarCheck, Scissors, MoreHorizontal } from 'lucide-react';
@@ -44,7 +45,7 @@ const Dashboard = () => {
         <div>
             {/* 4 KPIs */}
             <div className="grid-4">
-                <KPICard title="Total Revenue" count={`$${totalRevenue.toLocaleString()}`} icon={DollarSign} trend={12} />
+                <KPICard title="Total Revenue" count={formatCurrency(totalRevenue)} icon={DollarSign} trend={12} />
                 <KPICard title="Appointments" count={appointments.length} icon={CalendarCheck} trend={8} />
                 <KPICard title="Active Staff" count={staff.length} icon={Users} trend={0} />
                 <KPICard title="Total Customers" count={customers.length} icon={Users} trend={15} />
@@ -101,7 +102,7 @@ const Dashboard = () => {
                                                     {app.status}
                                                 </span>
                                             </td>
-                                            <td style={{ textAlign: 'right' }}>${service?.price}</td>
+                                            <td style={{ textAlign: 'right' }}>{formatCurrency(service?.price)}</td>
                                         </tr>
                                     );
                                 })}
@@ -126,7 +127,7 @@ const Dashboard = () => {
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontWeight: 'bold' }}>$1,250</div>
+                                    <div style={{ fontWeight: 'bold' }}>{formatCurrency(1250)}</div>
                                     <div style={{ fontSize: '0.75rem', color: '#10B981' }}>+12%</div>
                                 </div>
                             </div>
