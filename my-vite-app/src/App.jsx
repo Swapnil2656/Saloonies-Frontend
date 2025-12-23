@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, HashRouter } from 'react-router-dom';
+import Layout from './components/Layout/Layout';
+import Dashboard from './pages/Dashboard';
+import Services from './pages/Services';
+import Staff from './pages/Staff';
+import Appointments from './pages/Appointments';
+import Products from './pages/Products';
+import Customers from './pages/Customers';
+import Attendance from './pages/Attendance';
+import Billing from './pages/Billing';
+import Reports from './pages/Reports';
+
+import { DataProvider } from './context/DataContext';
+import './utils/chartSetup';
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        <DataProvider>
+            <HashRouter>
+                <Routes>
+                    <Route path="/" element={<Layout />}>
+                        <Route index element={<Dashboard />} />
+                        <Route path="services" element={<Services />} />
+                        <Route path="staff" element={<Staff />} />
+                        <Route path="attendance" element={<Attendance />} />
+                        <Route path="products" element={<Products />} />
+                        <Route path="customers" element={<Customers />} />
+                        <Route path="appointments" element={<Appointments />} />
+                        <Route path="billing" element={<Billing />} />
+                        <Route path="reports" element={<Reports />} />
+                        <Route path="*" element={<Dashboard />} />
+                    </Route>
+                </Routes>
+            </HashRouter>
+        </DataProvider>
+    );
 }
 
-export default App
+export default App;
