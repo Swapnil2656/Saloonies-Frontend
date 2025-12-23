@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import Modal from '../components/UI/Modal';
-import { Plus, Printer, Eye, MapPin } from 'lucide-react';
+import { Plus, Printer, Eye, MapPin, Download, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { useLocation } from 'react-router-dom';
 
 const INDIAN_STATES = ['Delhi', 'Maharashtra', 'Karnataka', 'Punjab', 'Haryana', 'Uttar Pradesh', 'Rajasthan'];
 
 const Billing = () => {
     const { invoices, customers, services, products, staff, addInvoice } = useData();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const location = useLocation();
+
+    // UI State
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [previewInvoice, setPreviewInvoice] = useState(null); // For View/Print modal
 
     // Invoice Form State
     const [invData, setInvData] = useState({
+        appointmentId: null,
         customerId: '',
         staffId: '',
         salonState: 'Delhi',
@@ -19,6 +25,22 @@ const Billing = () => {
         selectedServices: [],
         selectedProducts: []
     });
+
+    // Handle Pre-fill from Appointments
+    useEffect(() => {
+        if (location.state) {
+            const { appointmentId, customerId, staffId, serviceId } = location.state;
+            setInvData(prev => ({
+                ...prev,
+                appointmentId,
+                customerId: customerId || '',
+                staffId: staffId || '',
+                selectedServices: serviceId ? [serviceId.toString()] : [],
+            }));
+            setIsFormOpen(true);
+            // Clear location state to prevent re-opening on refresh - ideally navigate replace, but minor.
+        }
+    }, [location.state]);
 
     const calculateTotals = () => {
         let subtotal = 0;
@@ -56,6 +78,7 @@ const Billing = () => {
         const totals = calculateTotals();
 
         const newInvoice = {
+            appointmentId: invData.appointmentId,
             customerId: parseInt(invData.customerId),
             staffId: parseInt(invData.staffId),
             date: new Date().toISOString().split('T')[0],
@@ -67,9 +90,9 @@ const Billing = () => {
         };
 
         addInvoice(newInvoice);
-        setIsModalOpen(false);
+        setIsFormOpen(false);
         setInvData({
-            customerId: '', staffId: '',
+            appointmentId: null, customerId: '', staffId: '',
             salonState: 'Delhi', customerState: 'Delhi',
             selectedServices: [], selectedProducts: []
         });
@@ -86,21 +109,25 @@ const Billing = () => {
         setInvData({ ...invData, [field]: value });
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     const totals = calculateTotals();
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }} className="no-print">
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>GST Invoicing</h2>
                     <p style={{ color: '#6B7280', marginTop: '4px' }}>Manage billing with auto-calculated CGST/SGST/IGST</p>
                 </div>
-                <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
-                    <Plus size={18} /> Creates Invoice
+                <button onClick={() => setIsFormOpen(true)} className="btn btn-primary">
+                    <Plus size={18} /> New Invoice
                 </button>
             </div>
 
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="card no-print" style={{ padding: 0, overflow: 'hidden' }}>
                 <div className="table-container">
                     <table>
                         <thead>
@@ -136,13 +163,11 @@ const Billing = () => {
                                             ) : (
                                                 <span className="status-badge" style={{ background: '#F1F5F9', color: '#475569' }}>CGST+SGST</span>
                                             )}
-                                            <div style={{ fontSize: '0.75rem', marginTop: '4px', fontWeight: 600 }}>${inv.totalGst.toFixed(2)}</div>
                                         </td>
                                         <td style={{ fontWeight: 700, color: '#10B981', fontSize: '1rem' }}>${inv.total.toFixed(2)}</td>
                                         <td style={{ textAlign: 'right', paddingRight: '24px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                                <button className="icon-btn" title="View"><Eye size={18} /></button>
-                                                <button className="icon-btn" title="Print Invoice"><Printer size={18} /></button>
+                                                <button onClick={() => setPreviewInvoice(inv)} className="icon-btn" title="View/Print"><Printer size={18} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -153,8 +178,10 @@ const Billing = () => {
                 </div>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Generate GST Invoice">
+            {/* CREATE INVOICE FORM MODAL */}
+            <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Generate GST Invoice">
                 <form onSubmit={handleCreate}>
+                    {/* ... Form Inputs Same as Before ... */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div className="form-group">
                             <label className="form-label">Customer</label>
@@ -171,73 +198,135 @@ const Billing = () => {
                             </select>
                         </div>
                     </div>
-
+                    {/* ... State Inputs ... */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#F8FAFC', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #E2E8F0' }}>
-                        <div className="form-group">
-                            <label className="form-label">Salon State (From)</label>
-                            <select className="form-input" value={invData.salonState} onChange={e => setInvData({ ...invData, salonState: e.target.value })}>
-                                {INDIAN_STATES.map(st => <option key={st} value={st}>{st}</option>)}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Customer State (To)</label>
-                            <select className="form-input" value={invData.customerState} onChange={e => setInvData({ ...invData, customerState: e.target.value })}>
-                                {INDIAN_STATES.map(st => <option key={st} value={st}>{st}</option>)}
-                            </select>
-                        </div>
+                        <div className="form-group"><label className="form-label">Salon State</label><select className="form-input" value={invData.salonState} onChange={e => setInvData({ ...invData, salonState: e.target.value })}>{INDIAN_STATES.map(st => <option key={st} value={st}>{st}</option>)}</select></div>
+                        <div className="form-group"><label className="form-label">Customer State</label><select className="form-input" value={invData.customerState} onChange={e => setInvData({ ...invData, customerState: e.target.value })}>{INDIAN_STATES.map(st => <option key={st} value={st}>{st}</option>)}</select></div>
                     </div>
-
+                    {/* ... Multi Selects ... */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group">
-                            <label className="form-label">Services (Hold Ctrl)</label>
-                            <select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedServices} onChange={e => handleMultiSelect(e, 'selectedServices')}>
-                                {services.map(s => <option key={s.id} value={s.id}>{s.name} (${s.price})</option>)}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Products (Hold Ctrl)</label>
-                            <select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedProducts} onChange={e => handleMultiSelect(e, 'selectedProducts')}>
-                                {products.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price})</option>)}
-                            </select>
-                        </div>
+                        <div className="form-group"><label className="form-label">Services (Ctrl+Click)</label><select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedServices} onChange={e => handleMultiSelect(e, 'selectedServices')}>{services.map(s => <option key={s.id} value={s.id}>{s.name} (${s.price})</option>)}</select></div>
+                        <div className="form-group"><label className="form-label">Products (Ctrl+Click)</label><select multiple className="form-input" style={{ height: '100px' }} value={invData.selectedProducts} onChange={e => handleMultiSelect(e, 'selectedProducts')}>{products.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price})</option>)}</select></div>
                     </div>
 
+                    {/* Totals Summary */}
                     <div style={{ background: '#F0F9FF', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #BAE6FD' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                            <span style={{ color: '#475569' }}>Subtotal</span>
-                            <span style={{ fontWeight: 600 }}>${totals.subtotal.toFixed(2)}</span>
-                        </div>
-
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span style={{ color: '#475569' }}>Subtotal</span><span style={{ fontWeight: 600 }}>${totals.subtotal.toFixed(2)}</span></div>
                         {totals.igst > 0 ? (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#EA580C' }}>
-                                <span>IGST (5%)</span>
-                                <span>+${totals.igst.toFixed(2)}</span>
-                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#EA580C' }}><span>IGST (5%)</span><span>+${totals.igst.toFixed(2)}</span></div>
                         ) : (
                             <>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}>
-                                    <span>CGST (2.5%)</span>
-                                    <span>+${totals.cgst.toFixed(2)}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}>
-                                    <span>SGST (2.5%)</span>
-                                    <span>+${totals.sgst.toFixed(2)}</span>
-                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}><span>CGST (2.5%)</span><span>+${totals.cgst.toFixed(2)}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#475569' }}><span>SGST (2.5%)</span><span>+${totals.sgst.toFixed(2)}</span></div>
                             </>
                         )}
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #BAE6FD', paddingTop: '8px', marginTop: '4px' }}>
-                            <span style={{ fontWeight: 700, color: '#0F172A' }}>Grand Total</span>
-                            <span style={{ fontWeight: 700, color: '#4F46E5', fontSize: '1.2rem' }}>${totals.total.toFixed(2)}</span>
-                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #BAE6FD', paddingTop: '8px', marginTop: '4px' }}><span style={{ fontWeight: 700, color: '#0F172A' }}>Grand Total</span><span style={{ fontWeight: 700, color: '#4F46E5', fontSize: '1.2rem' }}>${totals.total.toFixed(2)}</span></div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                        <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
+                        <button type="button" onClick={() => setIsFormOpen(false)} className="btn btn-secondary">Cancel</button>
                         <button type="submit" className="btn btn-primary">Create Invoice</button>
                     </div>
                 </form>
             </Modal>
+
+            {/* INVOICE PREVIEW MODAL */}
+            {previewInvoice && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(0,0,0,0.5)' }}>
+                    <div style={{ background: 'white', width: '210mm', minHeight: '297mm', padding: '40px', overflowY: 'auto', maxHeight: '90vh', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }} className="print-container">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+                            <div>
+                                <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: 0 }}>INVOICE</h1>
+                                <div style={{ color: '#6B7280', fontSize: '0.9rem', marginTop: '4px' }}>#{previewInvoice.id}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Saloonie Premium</h2>
+                                <div style={{ fontSize: '0.9rem', color: '#6B7280' }}>123, Fashion Street, Delhi</div>
+                                <div style={{ fontSize: '0.9rem', color: '#6B7280' }}>GSTIN: 07AABCU9603R1Z2</div>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '40px' }}>
+                            <div>
+                                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', marginBottom: '8px' }}>Bill To</div>
+                                <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{customers.find(c => c.id === previewInvoice.customerId)?.name}</div>
+                                <div style={{ color: '#6B7280' }}>{previewInvoice.customerState}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', marginBottom: '8px' }}>Date</div>
+                                <div style={{ fontWeight: 600 }}>{format(new Date(previewInvoice.date), 'dd MMMM yyyy')}</div>
+                            </div>
+                        </div>
+
+                        <table style={{ width: '100%', marginBottom: '40px', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '2px solid #E5E7EB' }}>
+                                    <th style={{ textAlign: 'left', padding: '12px 0' }}>Item</th>
+                                    <th style={{ textAlign: 'left', padding: '12px 0' }}>Type</th>
+                                    <th style={{ textAlign: 'right', padding: '12px 0' }}>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {previewInvoice.services?.map((s, i) => (
+                                    <tr key={`s-${i}`} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                                        <td style={{ padding: '12px 0' }}>{s.name}</td>
+                                        <td style={{ padding: '12px 0', color: '#6B7280' }}>Service</td>
+                                        <td style={{ textAlign: 'right', padding: '12px 0' }}>${s.price.toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                                {previewInvoice.products?.map((p, i) => (
+                                    <tr key={`p-${i}`} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                                        <td style={{ padding: '12px 0' }}>{p.name}</td>
+                                        <td style={{ padding: '12px 0', color: '#6B7280' }}>Product</td>
+                                        <td style={{ textAlign: 'right', padding: '12px 0' }}>${p.price.toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
+                            <div style={{ width: '300px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                    <span style={{ color: '#6B7280' }}>Subtotal</span>
+                                    <span style={{ fontWeight: 600 }}>${previewInvoice.subtotal.toFixed(2)}</span>
+                                </div>
+                                {previewInvoice.igst > 0 ? (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                        <span style={{ color: '#6B7280' }}>IGST (5%)</span>
+                                        <span>${previewInvoice.igst.toFixed(2)}</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                            <span style={{ color: '#6B7280' }}>CGST (2.5%)</span>
+                                            <span>${previewInvoice.cgst.toFixed(2)}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                            <span style={{ color: '#6B7280' }}>SGST (2.5%)</span>
+                                            <span>${previewInvoice.sgst.toFixed(2)}</span>
+                                        </div>
+                                    </>
+                                )}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #E5E7EB', paddingTop: '12px', fontSize: '1.2rem', fontWeight: 800 }}>
+                                    <span>Total</span>
+                                    <span>${previewInvoice.total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: 'auto', paddingTop: '40px', borderTop: '1px solid #E5E7EB', textAlign: 'center', color: '#9CA3AF', fontSize: '0.8rem' }}>
+                            Thank you for your business! | support@saloonie.com
+                        </div>
+
+                        {/* ACTION BUTTONS (Hidden in Print) */}
+                        <div className="no-print" style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '1rem', background: 'white', padding: '10px', borderRadius: '50px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                            <button onClick={() => window.print()} className="btn btn-primary" style={{ borderRadius: '50px' }}><Printer size={18} /> Print</button>
+                            <button onClick={() => setPreviewInvoice(null)} className="btn btn-secondary" style={{ borderRadius: '50px' }}><X size={18} /> Close</button>
+                        </div>
+                        <style>{`@media print { .no-print { display: none !important; } .app-container { visibility: hidden; } .print-container { visibility: visible; position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding: 20px; box-shadow: none !important; } }`}</style>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

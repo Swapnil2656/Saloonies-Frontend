@@ -14,6 +14,14 @@ export const DataProvider = ({ children }) => {
     const [attendance, setAttendance] = useState([]);
     const [invoices, setInvoices] = useState([]);
 
+    // Simple Toast State
+    const [toast, setToast] = useState(null); // { message, type }
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
     const addService = (service) => setServices([...services, { ...service, id: Date.now() }]);
     const deleteService = (id) => setServices(services.filter(s => s.id !== id));
     const addStaff = (newStaff) => setStaff([...staff, { ...newStaff, id: Date.now(), image: `https://i.pravatar.cc/150?u=${Date.now()}` }]);
@@ -21,7 +29,23 @@ export const DataProvider = ({ children }) => {
     const deleteProduct = (id) => setProducts(products.filter(p => p.id !== id));
     const addCustomer = (customer) => setCustomers([...customers, { ...customer, id: Date.now(), visits: 0 }]);
     const addAppointment = (appointment) => setAppointments([...appointments, { ...appointment, id: Date.now(), status: 'Scheduled' }]);
-    const addInvoice = (invoice) => setInvoices([...invoices, { ...invoice, id: Date.now() }]);
+
+    const updateAppointmentStatus = (id, status) => {
+        setAppointments(prev => prev.map(app => app.id === id ? { ...app, status } : app));
+        showToast(`Appointment marked as ${status}`);
+    };
+
+    const addInvoice = (invoice) => {
+        setInvoices([...invoices, { ...invoice, id: Date.now() }]);
+
+        // If invoice is linked to an appointment, mark it completed
+        if (invoice.appointmentId) {
+            setAppointments(prev => prev.map(app =>
+                app.id === invoice.appointmentId ? { ...app, status: 'Completed', isBilled: true } : app
+            ));
+        }
+        showToast('Invoice generated successfully');
+    };
 
     const markAttendance = (date, staffId, status) => {
         const filtered = attendance.filter(a => !(a.date === date && a.staffId === staffId));
@@ -32,35 +56,12 @@ export const DataProvider = ({ children }) => {
         const today = new Date().toISOString().split('T')[0];
         setAttendance(staff.map(s => ({ date: today, staffId: s.id, status: Math.random() > 0.1 ? 'Present' : 'Absent' })));
 
-        // Mock Invoices with GST Data
-        // Scenario 1: Same State (Delhi -> Delhi) = CGST + SGST
-        // Scenario 2: Diff State (Delhi -> Mumbai) = IGST
+        // Mock Invoices
         setInvoices([
-            {
-                id: 1001, customerId: 1, staffId: 1, date: '2025-12-20',
-                services: [mockServices[0]], products: [],
-                salonState: 'Delhi', customerState: 'Delhi',
-                subtotal: 50, cgst: 1.25, sgst: 1.25, igst: 0, totalGst: 2.5, total: 52.5
-            },
-            {
-                id: 1002, customerId: 2, staffId: 2, date: '2025-12-21',
-                services: [mockServices[1], mockServices[2]], products: [mockProducts[0]],
-                salonState: 'Delhi', customerState: 'Maharashtra',
-                subtotal: 120, cgst: 0, sgst: 0, igst: 6, totalGst: 6, total: 126
-            },
-            {
-                id: 1003, customerId: 3, staffId: 1, date: '2025-12-22',
-                services: [mockServices[0]], products: [],
-                salonState: 'Delhi', customerState: 'Delhi',
-                subtotal: 50, cgst: 1.25, sgst: 1.25, igst: 0, totalGst: 2.5, total: 52.5
-            },
-            {
-                id: 1004, customerId: 1, staffId: 3, date: '2025-12-23',
-                services: [mockServices[2]], products: [],
-                salonState: 'Delhi', customerState: 'Punjab',
-                subtotal: 80, cgst: 0, sgst: 0, igst: 4, totalGst: 4, total: 84
-            }
+            { id: 1001, customerId: 1, staffId: 1, date: '2025-12-20', services: [mockServices[0]], products: [], salonState: 'Delhi', customerState: 'Delhi', subtotal: 50, cgst: 1.25, sgst: 1.25, igst: 0, totalGst: 2.5, total: 52.5 },
         ]);
+
+        // Ensure mock appointments have IDs compatible if needed (mock data usually has IDs)
     }, []);
 
     return (
@@ -69,11 +70,24 @@ export const DataProvider = ({ children }) => {
             staff, addStaff,
             products, addProduct, deleteProduct,
             customers, addCustomer,
-            appointments, addAppointment, setAppointments,
+            appointments, addAppointment, updateAppointmentStatus,
             attendance, markAttendance,
-            invoices, addInvoice
+            invoices, addInvoice,
+            toast, showToast
         }}>
             {children}
+            {/* Global Toast Render */}
+            {toast && (
+                <div style={{
+                    position: 'fixed', bottom: '24px', right: '24px',
+                    background: toast.type === 'error' ? '#EF4444' : '#10B981',
+                    color: 'white', padding: '12px 24px', borderRadius: '8px',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', zIndex: 9999,
+                    animation: 'fadeIn 0.3s ease-out'
+                }}>
+                    {toast.message}
+                </div>
+            )}
         </DataContext.Provider>
     );
 };

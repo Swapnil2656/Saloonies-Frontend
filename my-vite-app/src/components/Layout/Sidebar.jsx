@@ -2,10 +2,10 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard, Scissors, Users, CalendarCheck, Package,
-    UserCircle, Calendar, Receipt, BarChart3
+    UserCircle, Calendar, Receipt, BarChart3, X
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
         { icon: Scissors, label: 'Services', path: '/services' },
@@ -19,37 +19,56 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="sidebar">
-            {/* Brand */}
-            <div className="nav-header">
-                <div className="logo-box">S</div>
-                <span className="brand-name">Saloonie</span>
-            </div>
+        <>
+            {/* Overlay for Mobile */}
+            <div
+                className={`sidebar-overlay ${isOpen ? 'visible' : ''}`}
+                onClick={onClose}
+            ></div>
 
-            {/* Navigation */}
-            <nav className="nav-links">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            `nav-item ${isActive ? 'active' : ''}`
-                        }
+            {/* Sidebar */}
+            <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+                {/* Brand */}
+                <div className="nav-header" style={{ justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className="logo-box">S</div>
+                        <span className="brand-name">Saloonie</span>
+                    </div>
+                    {/* Close button for mobile */}
+                    <button
+                        className="icon-btn hidden-desktop"
+                        onClick={onClose}
                     >
-                        <item.icon />
-                        <span>{item.label}</span>
-                    </NavLink>
-                ))}
-            </nav>
-
-            {/* Footer / Pro Plan */}
-            <div style={{ marginTop: 'auto', padding: '1.5rem' }}>
-                <div style={{ background: '#F3F4F6', padding: '1rem', borderRadius: '12px' }}>
-                    <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9rem' }}>Admin Access</h4>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#6B7280' }}>Logged in as Manager</p>
+                        <X size={20} />
+                    </button>
                 </div>
-            </div>
-        </aside>
+
+                {/* Navigation */}
+                <nav className="nav-links">
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            onClick={onClose} // Auto close on mobile nav
+                            className={({ isActive }) =>
+                                `nav-item ${isActive ? 'active' : ''}`
+                            }
+                        >
+                            <item.icon />
+                            <span>{item.label}</span>
+                        </NavLink>
+                    ))}
+                </nav>
+
+                {/* Footer */}
+                <div style={{ marginTop: 'auto', padding: '1.5rem' }}>
+                    <div style={{ background: '#F3F4F6', padding: '1rem', borderRadius: '12px' }}>
+                        <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9rem' }}>Admin Access</h4>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#6B7280' }}>Logged in as Manager</p>
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 };
 
