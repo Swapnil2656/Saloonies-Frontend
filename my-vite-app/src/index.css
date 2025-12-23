@@ -290,8 +290,8 @@ body {
 
 .card-header {
   display: flex;
-  justifyContent: space-between;
-  alignItems: center;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1.5rem;
 }
 
@@ -329,7 +329,7 @@ body {
   border-radius: 50%;
   display: flex;
   align-items: center;
-  justifyContent: center;
+  justify-content: center;
 }
 
 .trend-badge {
