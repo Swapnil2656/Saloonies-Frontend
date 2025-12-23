@@ -121,14 +121,14 @@ const Reports = () => {
                 <div className="card">
                     <div className="card-header"><h3 className="card-title">Revenue & Tax Overview</h3></div>
                     <div style={{ height: '300px' }}>
-                        <Line data={lineData} options={{
+                        {totalRev > 0 && <Line key={JSON.stringify(lineData)} data={lineData} options={{
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: { position: 'top' },
                                 tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } }
                             },
                             scales: { y: { ticks: { callback: (v) => formatCurrency(v) } } }
-                        }} />
+                        }} />}
                     </div>
                 </div>
 
@@ -136,7 +136,7 @@ const Reports = () => {
                 <div className="card">
                     <div className="card-header"><h3 className="card-title">GST Breakdown</h3></div>
                     <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
-                        <Doughnut data={pieData} options={{
+                        <Doughnut key={JSON.stringify(pieData)} data={pieData} options={{
                             maintainAspectRatio: false,
                             plugins: { tooltip: { callbacks: { label: (c) => c.label + ': ' + formatCurrency(c.parsed) } } }
                         }} />
@@ -159,7 +159,7 @@ const Reports = () => {
             <div className="card">
                 <div className="card-header"><h3 className="card-title">Revenue by Staff Member</h3></div>
                 <div style={{ height: '250px' }}>
-                    <Bar data={barData} options={{
+                    <Bar key={JSON.stringify(barData)} data={barData} options={{
                         maintainAspectRatio: false,
                         plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } } },
                         scales: { y: { ticks: { callback: (v) => formatCurrency(v) } } }

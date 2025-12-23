@@ -474,6 +474,17 @@ tr:last-child td {
   display: none;
 }
 
+.desktop-search-container {
+  display: none;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .desktop-search-container {
+    display: block;
+  }
+}
+
 @media (max-width: 1024px) {
   .hidden-desktop {
     display: block;

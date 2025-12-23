@@ -19,7 +19,7 @@ const Header = ({ title, onMenuClick }) => {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {/* Search Input - Hide on small mobile */}
-                <div style={{ position: 'relative', display: 'none', '@media (min-width: 640px)': { display: 'block' } }} className="hidden-mobile-xs">
+                <div className="desktop-search-container">
                     <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
                     <input
                         type="text"
@@ -50,15 +50,9 @@ const Header = ({ title, onMenuClick }) => {
                     </div>
                 </div>
             </div>
-
-            {/* Search icon for mobile only */}
-            <style>{`
-        @media (max-width: 640px) {
-            .hidden-mobile-xs { display: none !important; }
-        }
-      `}</style>
         </header>
     );
 };
+
 
 export default Header;

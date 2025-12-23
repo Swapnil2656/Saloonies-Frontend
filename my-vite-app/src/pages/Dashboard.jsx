@@ -58,7 +58,7 @@ const Dashboard = () => {
                         <h3 className="card-title">Revenue Trends</h3>
                     </div>
                     <div style={{ height: '300px' }}>
-                        <Line data={lineData} options={lineOptions} />
+                        {totalRevenue > 0 && <Line key={JSON.stringify(lineData)} data={lineData} options={lineOptions} />}
                     </div>
                 </div>
                 <div className="card">
@@ -66,7 +66,7 @@ const Dashboard = () => {
                         <h3 className="card-title">Services</h3>
                     </div>
                     <div style={{ height: '200px', display: 'flex', justifyContent: 'center' }}>
-                        <Doughnut data={pieData} options={{ maintainAspectRatio: false }} />
+                        <Doughnut key={JSON.stringify(pieData)} data={pieData} options={{ maintainAspectRatio: false }} />
                     </div>
                 </div>
             </div>

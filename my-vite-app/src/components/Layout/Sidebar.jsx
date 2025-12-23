@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard, Scissors, Users, CalendarCheck, Package,
-    UserCircle, Calendar, Receipt, BarChart3, X
+    UserCircle, Calendar, Receipt, BarChart3, X, LogOut
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -70,7 +70,21 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {/* Footer */}
                 <div style={{ marginTop: 'auto', padding: '1.5rem' }}>
                     <div style={{ background: '#F3F4F6', padding: '1rem', borderRadius: '12px' }}>
-                        <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9rem' }}>Admin Access</h4>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Admin Access</h4>
+                            <button
+                                onClick={() => {
+                                    if (window.confirm('Are you sure you want to logout?')) {
+                                        localStorage.removeItem('isLoggedIn');
+                                        window.location.href = '/login';
+                                    }
+                                }}
+                                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#EF4444', padding: 0 }}
+                                title="Logout"
+                            >
+                                <LogOut size={16} />
+                            </button>
+                        </div>
                         <p style={{ margin: 0, fontSize: '0.8rem', color: '#6B7280' }}>Logged in as Manager</p>
                     </div>
                 </div>
